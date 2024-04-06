@@ -1,7 +1,6 @@
 package step;
 
 import client.OrderClient;
-
 import dto.CreateOrderRequest;
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
@@ -14,12 +13,13 @@ import java.util.Random;
 public class OrderSteps {
 
     private final OrderClient orderClient;
+
     public OrderSteps(OrderClient orderClient) {
         this.orderClient = orderClient;
     }
 
     @Step("Получить ингридиенты для заказа")
-    public ValidatableResponse getIngridients(){
+    public ValidatableResponse getIngridients() {
         return orderClient.getIngridients()
                 .then();
     }
@@ -52,5 +52,42 @@ public class OrderSteps {
                 .build();
         return orderClient.createOrderWithoutAuth(createOrderRequest).then();
     }
+
+    @Step("Получить список поледних 50 заказов")
+    public ValidatableResponse getLast50Orders() {
+        return orderClient.getAllOrders().then();
+    }
+
+    @Step("Получить список заказов пользователя c авторизацией")
+    public ValidatableResponse getUserOrders(String accessToken) {
+        return orderClient.getUserOrdersWithAuth(accessToken).then();
+    }
+    @Step("Получить список заказов пользователя без авторизации")
+    public ValidatableResponse getUserOrdersWithoutAuth() {
+        return orderClient.getUserOrdersWithoutAuth().then();
+    }
+
+    @Step("Наличие заказа в списке всех заказов по id или номеру")
+    public boolean checkOrderInAllOrdersList(String order) {
+        List<HashMap<String, Object>> orderList = getLast50Orders().extract().path("orders");
+        for (HashMap<String, Object> stringObjectHashMap : orderList) {
+            if (order.equals(stringObjectHashMap.get("_id").toString()) || order.equals(stringObjectHashMap.get("number").toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Step("Наличие заказа в списке заказов пользователя")
+    public boolean checkOrderInUserOrdersList(String order, String accessToken) {
+        List<HashMap<String, Object>> orderList = getUserOrders(accessToken).extract().path("orders");
+        for (HashMap<String, Object> stringObjectHashMap : orderList) {
+            if (order.equals(stringObjectHashMap.get("_id").toString()) || order.equals(stringObjectHashMap.get("number").toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

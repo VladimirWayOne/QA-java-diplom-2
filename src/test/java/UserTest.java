@@ -1,4 +1,5 @@
 import client.UserClient;
+import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
@@ -17,6 +18,7 @@ public class UserTest {
     private String email;
 
     @Before
+    @Step("Инициализация клиента и подготовка тестовых данных")
     public void setUp() {
         userSteps = new UserSteps(new UserClient());
         name = RandomStringUtils.randomAlphabetic(10);
@@ -120,7 +122,7 @@ public class UserTest {
 
     @Test
     @DisplayName("Обновление данных без авторизации")
-    public void updateUserWithoutAuth(){
+    public void updateUserWithoutAuth() {
         userSteps.createUser(email, password, name);
         String newEmail = RandomStringUtils.randomAlphabetic(10) + "@mail.test";
         userSteps.updateDataWithoutAuth(newEmail, "Новое имя")
@@ -128,6 +130,7 @@ public class UserTest {
                 .statusCode(SC_UNAUTHORIZED);
 
     }
+
     @Test
     @DisplayName("Обновление почты пользователя на существующую")
     public void updateUserEmailOnExistEmail() {

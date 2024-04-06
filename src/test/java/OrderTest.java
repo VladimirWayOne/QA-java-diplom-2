@@ -1,22 +1,20 @@
 import client.OrderClient;
 import client.UserClient;
+import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-
 import io.restassured.response.ValidatableResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import step.OrderSteps;
 import step.UserSteps;
 
 import java.util.ArrayList;
-
 import java.util.List;
 
-
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.*;
 
 
@@ -28,6 +26,7 @@ public class OrderTest {
     private String email;
 
     @Before
+    @Step("Инициализация клиентов и подготовка тестовых данных")
     public void setUp() {
         orderSteps = new OrderSteps(new OrderClient());
         userSteps = new UserSteps(new UserClient());
@@ -54,11 +53,7 @@ public class OrderTest {
     @Test
     @DisplayName("Получить список ингредиентов")
     public void getIngredients() {
-        orderSteps.getIngridients()
-                .assertThat()
-                .body("data", notNullValue())
-                .and()
-                .body("data", isA(ArrayList.class));
+        orderSteps.getIngridients().assertThat().body("data", notNullValue()).and().body("data", isA(ArrayList.class));
 
     }
 
@@ -68,9 +63,7 @@ public class OrderTest {
         ValidatableResponse ingredientsInfo = orderSteps.getIngridients();
         List<String> ingredientsList = orderSteps.chooseIngridients(ingredientsInfo, 5);
         // System.out.println(ingredientsList);
-        orderSteps.createOrderWithoutAuth(ingredientsList)
-                .assertThat()
-                .body("success", equalTo(true));
+        orderSteps.createOrderWithoutAuth(ingredientsList).assertThat().body("success", equalTo(true));
 
     }
 
@@ -82,9 +75,7 @@ public class OrderTest {
         ValidatableResponse ingredientsInfo = orderSteps.getIngridients();
         List<String> ingredientsList = orderSteps.chooseIngridients(ingredientsInfo, 5);
         // System.out.println(ingredientsList);
-        orderSteps.createOrderWithAuth(ingredientsList, accessToken)
-                .assertThat()
-                .body("success", equalTo(true));
+        orderSteps.createOrderWithAuth(ingredientsList, accessToken).assertThat().body("success", equalTo(true));
 
     }
 
@@ -92,9 +83,7 @@ public class OrderTest {
     @DisplayName("Создать заказ с пустым списком ингредиентов ингредиентами")
     public void createOrderNoneIngredients() {
 
-        orderSteps.createOrderWithoutAuth(new ArrayList<>())
-                .assertThat()
-                .statusCode(SC_BAD_REQUEST);
+        orderSteps.createOrderWithoutAuth(new ArrayList<>()).assertThat().statusCode(SC_BAD_REQUEST);
 
     }
 
@@ -103,9 +92,56 @@ public class OrderTest {
     public void createOrderInvalidIngredients() {
         ArrayList<String> invalidIngredient = new ArrayList<>();
         invalidIngredient.add("invalidIngredient");
-        orderSteps.createOrderWithoutAuth(invalidIngredient)
-                .assertThat()
-                .statusCode(SC_INTERNAL_SERVER_ERROR);
+        orderSteps.createOrderWithoutAuth(invalidIngredient).assertThat().statusCode(SC_INTERNAL_SERVER_ERROR);
 
+    }
+
+    @Test
+    @DisplayName("Получить заказ, сделанный без авторизации в списке всех заказов")
+    public void createOrderWithoutAuthAndGetItInAllOrdersListNotFound() {
+        ValidatableResponse ingredientsInfo = orderSteps.getIngridients();
+        List<String> ingredientsList = orderSteps.chooseIngridients(ingredientsInfo, 2);
+        String orderId = orderSteps.createOrderWithoutAuth(ingredientsList)
+                .extract()
+                .path("order.number")
+                .toString();
+        Assert.assertFalse("Заказ, сделанный без авторизации не должен отображаться в общем списке", orderSteps.checkOrderInAllOrdersList(orderId));
+    }
+
+
+    @Test
+    @DisplayName("Получить заказ, сделанный c авторизацией в списке всех заказов")
+    public void createOrderWithAuthAndGetItInAllOrdersListSuccessfullyFound() {
+        ValidatableResponse ingredientsInfo = orderSteps.getIngridients();
+        List<String> ingredientsList = orderSteps.chooseIngridients(ingredientsInfo, 2);
+        userSteps.createUser(email, password, name);
+        String accessToken = userSteps.getUserToken(email, password);
+        String orderId = orderSteps.createOrderWithAuth(ingredientsList, accessToken)
+                .extract()
+                .path("order.number")
+                .toString();
+        Assert.assertTrue("Заказ, сделанный c авторизацией должен отображаться в общем списке", orderSteps.checkOrderInAllOrdersList(orderId));
+    }
+
+    @Test
+    @DisplayName("Получить заказ, сделанный c авторизацией в списке заказов пользователя")
+    public void createOrderWithAuthAndGetItInUserlOrdersListSuccessfullyFound() {
+        ValidatableResponse ingredientsInfo = orderSteps.getIngridients();
+        List<String> ingredientsList = orderSteps.chooseIngridients(ingredientsInfo, 2);
+        userSteps.createUser(email, password, name);
+        String accessToken = userSteps.getUserToken(email, password);
+        String orderId = orderSteps.createOrderWithAuth(ingredientsList, accessToken)
+                .extract()
+                .path("order.number")
+                .toString();
+        Assert.assertTrue("Заказ, сделанный с авторизацией должен отображаться в списке заказов пользователя", orderSteps.checkOrderInUserOrdersList(orderId, accessToken));
+    }
+
+    @Test
+    @DisplayName("Попытка получить список заказов пользователя без авторизации")
+    public void getUserOrdersWithoutAuth() {
+        orderSteps.getUserOrdersWithoutAuth()
+                .assertThat()
+                .statusCode(SC_UNAUTHORIZED);
     }
 }

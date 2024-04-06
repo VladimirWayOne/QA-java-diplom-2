@@ -5,7 +5,7 @@ import dto.LoginUserRequest;
 import dto.UpdateUserRequest;
 import io.restassured.response.Response;
 
-public class UserClient extends RestClient{
+public class UserClient extends RestClient {
 
     public Response createUser(CreateUserRequest createUserRequest) {
         return getDefaultRequestSpecification()
@@ -38,6 +38,7 @@ public class UserClient extends RestClient{
                 .when()
                 .patch("/auth/user");
     }
+
     public Response updateUserWithoutAuth(UpdateUserRequest updateUserRequest) {
         return getDefaultRequestSpecification()
                 .body(updateUserRequest)//.log().all()

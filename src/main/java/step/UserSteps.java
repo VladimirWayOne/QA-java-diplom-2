@@ -9,12 +9,13 @@ import io.restassured.response.ValidatableResponse;
 
 public class UserSteps {
     private final UserClient userClient;
+
     public UserSteps(UserClient userClient) {
         this.userClient = userClient;
     }
 
     @Step("Корректное создание пользователя")
-    public ValidatableResponse createUser(String email, String password, String name){
+    public ValidatableResponse createUser(String email, String password, String name) {
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .email(email)
                 .password(password)
@@ -27,7 +28,7 @@ public class UserSteps {
     }
 
     @Step("Создание пользователя без пароля")
-    public ValidatableResponse createUserWithoutPassword(String email,String name) {
+    public ValidatableResponse createUserWithoutPassword(String email, String name) {
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .email(email)
                 .name(name)
@@ -39,7 +40,7 @@ public class UserSteps {
     }
 
     @Step("Авторизация пользователя")
-    public ValidatableResponse loginUser(String email, String password){
+    public ValidatableResponse loginUser(String email, String password) {
         LoginUserRequest loginUserRequest = LoginUserRequest.builder()
                 .email(email)
                 .password(password)
@@ -51,11 +52,12 @@ public class UserSteps {
 
     @Step("Получение токена")
     public String getUserToken(String email, String password) {
-        String token = loginUser(email, password)
+        return loginUser(email, password)
                 .extract()
                 .path("accessToken");
-        return token.substring(7);
+
     }
+
     @Step("Удаление пользователя")
     public ValidatableResponse deleteUser(String email, String password) {
         String bearerToken = getUserToken(email, password);
@@ -64,7 +66,7 @@ public class UserSteps {
     }
 
     @Step("Обновление имени пользователя с авторизацией")
-    public ValidatableResponse updateName(String email, String password, String newName){
+    public ValidatableResponse updateName(String email, String password, String newName) {
         String bearerToken = getUserToken(email, password);
         UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
                 .name(newName).build();
@@ -73,7 +75,7 @@ public class UserSteps {
     }
 
     @Step("Обновление почты пользователя с авторизацией")
-    public ValidatableResponse updateEmail(String email, String password, String newEmail){
+    public ValidatableResponse updateEmail(String email, String password, String newEmail) {
         String bearerToken = getUserToken(email, password);
         UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
                 .email(newEmail)
@@ -83,7 +85,7 @@ public class UserSteps {
     }
 
     @Step("Обновление данных без авторизации")
-    public ValidatableResponse updateDataWithoutAuth(String newEmail, String newName){
+    public ValidatableResponse updateDataWithoutAuth(String newEmail, String newName) {
         UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
                 .email(newEmail)
                 .name(newName)
