@@ -24,16 +24,14 @@ public class UserClient extends RestClient {
 
     public Response deleteUser(String bearerToken) {
         return getDefaultRequestSpecification()
-                .auth()
-                .oauth2(bearerToken)
+                .header("authorization", bearerToken)
                 .when()
                 .delete("/auth/user");
     }
 
     public Response updateUser(String bearerToken, UpdateUserRequest updateUserRequest) {
         return getDefaultRequestSpecification()
-                .auth()
-                .oauth2(bearerToken)
+                .header("authorization", bearerToken)
                 .body(updateUserRequest)//.log().all()
                 .when()
                 .patch("/auth/user");
