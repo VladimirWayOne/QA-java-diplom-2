@@ -9,7 +9,7 @@ public class UserClient extends RestClient{
 
     public Response createUser(CreateUserRequest createUserRequest) {
         return getDefaultRequestSpecification()
-                .body(createUserRequest).log().all()
+                .body(createUserRequest)//.log().all()
                 .when()
                 .post("/auth/register");
 
@@ -34,13 +34,13 @@ public class UserClient extends RestClient{
         return getDefaultRequestSpecification()
                 .auth()
                 .oauth2(bearerToken)
-                .body(updateUserRequest).log().all()
+                .body(updateUserRequest)//.log().all()
                 .when()
                 .patch("/auth/user");
     }
     public Response updateUserWithoutAuth(UpdateUserRequest updateUserRequest) {
         return getDefaultRequestSpecification()
-                .body(updateUserRequest).log().all()
+                .body(updateUserRequest)//.log().all()
                 .when()
                 .patch("/auth/user");
     }

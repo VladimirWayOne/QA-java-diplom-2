@@ -27,7 +27,7 @@ public class UserTest {
     @After
     public void tearDown() {
         // Конструкция нужна для
-        // избежания NullPointer,
+        // избежания NPE,
         // когда мы пытаемся удалить несуществующего пользователя
         try {
 
