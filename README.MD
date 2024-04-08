@@ -30,3 +30,6 @@ Default locale: ru_RU, platform encoding: Cp1251
 ### 5. Получение заказов конкретного пользователя:
 - авторизованный пользователь,
 - неавторизованный пользователь.
+
+
+Тесты для пуктов 4 и 5 находятся в классе [OrderTest.java](src%2Ftest%2Fjava%2FOrderTest.java)
