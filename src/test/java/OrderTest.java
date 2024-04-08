@@ -37,6 +37,7 @@ public class OrderTest {
     }
 
     @After
+    @Step("Удаление пользователя, если он был создан")
     public void tearDown() {
         // Конструкция нужна для
         // избежания NPE,
